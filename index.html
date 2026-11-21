@@ -2,182 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- منع المتصفح من حفظ نسخة قديمة تالفة -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Windows Desktop Widgets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>مواقيت الصلاة - القاهرة</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: transparent; display: flex; flex-direction: column; align-items: flex-end; padding: 20px; height: 100vh; overflow: hidden; }
-        .widget-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 400px; }
-
-       
-
-        /* 2. المواقيت */
-        .prayer-card { background-color: #c7d2fe; border: 3px solid #c7d2fe; border-radius: 16px; width: 100%; overflow: hidden; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .cell { background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 6px 2px; }
+        html, body { width: 100%; height: 100vh; height: 100dvh; overflow: hidden; background: #1e293b; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
+        .card { background-color: #c7d2fe; border: 4px solid #c7d2fe; border-radius: 16px; width: 100%; height: 100%; max-width: 600px; max-height: 850px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: 0.8fr 0.8fr 1.2fr 1.5fr 0.8fr 1fr 1fr; gap: 3px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; }
+        .cell { background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2px; }
         .half-width { grid-column: span 3; } .third-width { grid-column: span 2; }
-        .year-cell { padding: 6px 0; font-weight: bold; font-size: 14px; color: #1e293b; background-color: #f8fafc; }
-        .month-cell { font-weight: bold; font-size: 12px; color: #0f172a; }
-        .day-cell { font-size: 22px; font-weight: bold; color: #4f46e5; background-color: #eef2ff; padding: 4px; }
-        .prayer-name { font-size: 10px; color: #4f46e5; font-weight: bold; margin-bottom: 2px; }
-        .prayer-time { font-size: 12px; color: #334155; font-weight: bold; direction: ltr; }
-        .location-bar { grid-column: span 6; background-color: #f8fafc; font-size: 9px; color: #64748b; padding: 4px; text-align: center; font-weight: bold; }
-        .next-prayer-box { grid-column: span 6; background-color: #f8fafc; font-size: 11px; padding: 6px; text-align: center; font-weight: bold; display: flex; justify-content: center; gap: 10px; }
-        .next-prayer-text { color: #4f46e5; } .countdown-text { color: #ef4444; direction: ltr; }
+        .year-cell { font-weight: bold; font-size: clamp(14px, 4vw, 24px); color: #1e293b; background-color: #f8fafc; }
+        .month-cell { font-weight: bold; font-size: clamp(12px, 3.5vw, 22px); color: #0f172a; }
+        .day-cell { font-size: clamp(28px, 7vw, 50px); font-weight: bold; color: #4f46e5; background-color: #eef2ff; }
+        .prayer-name { font-size: clamp(11px, 3vw, 16px); color: #4f46e5; font-weight: bold; margin-bottom: 2px; }
+        .prayer-time { font-size: clamp(14px, 4vw, 22px); color: #334155; font-weight: bold; direction: ltr; }
+        .location-bar { grid-column: span 6; background-color: #f8fafc; font-size: clamp(11px, 3vw, 16px); color: #64748b; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        .next-prayer-box, .ramadan-box { grid-column: span 6; background-color: #f8fafc; font-size: clamp(13px, 3.5vw, 20px); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 5px 15px; font-weight: bold; padding: 4px; }
+        .ramadan-box { border-top: 1px solid #e2e8f0; }
+        .next-prayer-text { color: #4f46e5; } .countdown-text { color: #ef4444; direction: ltr; font-size: clamp(16px, 4.5vw, 26px);}
+        .ramadan-countdown-text { color: #10b981; font-size: clamp(14px, 4vw, 22px); }
     </style>
 </head>
 <body>
-    <div class="widget-container">
-        <div class="clocks-grid" id="clock-grid"></div>
-        <div class="prayer-card">
-            <div class="cell half-width year-cell" id="gregYear">----</div>
-            <div class="cell half-width year-cell" id="hijriYear">----</div>
-            <div class="cell half-width month-cell" id="gregMonth">----</div>
-            <div class="cell half-width month-cell" id="hijriMonth">----</div>
-            <div class="cell half-width day-cell" id="gregDay">--</div>
-            <div class="cell half-width day-cell" id="hijriDay">--</div>
-            <div class="cell third-width"><div class="prayer-name">الفجر</div><div class="prayer-time" id="fajr">--:--</div></div>
-            <div class="cell third-width"><div class="prayer-name">الشروق</div><div class="prayer-time" id="sunrise">--:--</div></div>
-            <div class="cell third-width"><div class="prayer-name">الظهر</div><div class="prayer-time" id="dhuhr">--:--</div></div>
-            <div class="cell third-width"><div class="prayer-name">العصر</div><div class="prayer-time" id="asr">--:--</div></div>
-            <div class="cell third-width"><div class="prayer-name">المغرب</div><div class="prayer-time" id="maghrib">--:--</div></div>
-            <div class="cell third-width"><div class="prayer-name">العشاء</div><div class="prayer-time" id="isha">--:--</div></div>
-            <div class="location-bar">القاهرة، مصر (طريقة الأزهر الشريف)</div>
-            <div class="next-prayer-box">
-                <span class="next-prayer-text">الصلاة القادمة: <span id="nextPrayerName">---</span></span>
-                <span class="next-prayer-text">متبقي: <span class="countdown-text" id="countdown">--:--:--</span></span>
-            </div>
+    <div class="card">
+        <div class="cell half-width year-cell" id="gregYear">----</div>
+        <div class="cell half-width year-cell" id="hijriYear">----</div>
+        <div class="cell half-width month-cell" id="gregMonth">----</div>
+        <div class="cell half-width month-cell" id="hijriMonth">----</div>
+        <div class="cell half-width day-cell" id="gregDay">--</div>
+        <div class="cell half-width day-cell" id="hijriDay">--</div>
+        <div class="cell third-width"><div class="prayer-name">الفجر</div><div class="prayer-time" id="fajr">--:--</div></div>
+        <div class="cell third-width"><div class="prayer-name">الشروق</div><div class="prayer-time" id="sunrise">--:--</div></div>
+        <div class="cell third-width"><div class="prayer-name">الظهر</div><div class="prayer-time" id="dhuhr">--:--</div></div>
+        <div class="cell third-width"><div class="prayer-name">العصر</div><div class="prayer-time" id="asr">--:--</div></div>
+        <div class="cell third-width"><div class="prayer-name">المغرب</div><div class="prayer-time" id="maghrib">--:--</div></div>
+        <div class="cell third-width"><div class="prayer-name">العشاء</div><div class="prayer-time" id="isha">--:--</div></div>
+        <div class="location-bar" id="locationBar">القاهرة، مصر (طريقة الأزهر الشريف)</div>
+        <div class="next-prayer-box">
+            <span class="next-prayer-text">الصلاة القادمة: <span id="nextPrayerName">---</span></span>
+            <span class="next-prayer-text">متبقي: <span class="countdown-text" id="countdown">--:--:--</span></span>
         </div>
+        <div class="ramadan-box"><span id="ramadanBox" style="color: #4f46e5;">جاري حساب عداد رمضان...</span></div>
     </div>
-
     <script>
-        // ================= 2. المواقيت =================
-        function formatTime12h(time24) {
-            if (!time24) return '--:--';
-            let [hours, minutes] = time24.split(':');
-            let h = parseInt(hours, 10);
-            h = h % 12;
-            h = h ? h : 12;
-            return `${h}:${minutes}`;
-        }
-
+        function formatTime12h(time24) { if (!time24) return '--:--'; let [hours, minutes] = time24.split(':'); let h = parseInt(hours, 10); h = h % 12; h = h ? h : 12; return `${h}:${minutes}`; }
         let globalPrayerTimes = {};
-
-        function updateGregorianDate() {
-            const now = new Date();
-            document.getElementById('gregYear').textContent = now.getFullYear();
-            document.getElementById('gregMonth').textContent = now.toLocaleDateString('ar-EG', { month: 'long' });
-            document.getElementById('gregDay').textContent = now.getDate();
-        }
-
+        function updateGregorianDate() { const now = new Date(); document.getElementById('gregYear').textContent = now.getFullYear(); document.getElementById('gregMonth').textContent = now.toLocaleDateString('ar-EG', { month: 'long' }); document.getElementById('gregDay').textContent = now.getDate(); }
         function updateUI(data) {
-            try {
-                const timings = data.timings;
-                const hijri = data.hijri;
-                document.getElementById('hijriYear').textContent = hijri.year;
-                document.getElementById('hijriMonth').textContent = hijri.month.ar;
-                document.getElementById('hijriDay').textContent = hijri.day;
-                document.getElementById('fajr').textContent = formatTime12h(timings.Fajr);
-                document.getElementById('sunrise').textContent = formatTime12h(timings.Sunrise);
-                document.getElementById('dhuhr').textContent = formatTime12h(timings.Dhuhr);
-                document.getElementById('asr').textContent = formatTime12h(timings.Asr);
-                document.getElementById('maghrib').textContent = formatTime12h(timings.Maghrib);
-                document.getElementById('isha').textContent = formatTime12h(timings.Isha);
-
-                globalPrayerTimes = {
-                    "الفجر": timings.Fajr, "الشروق": timings.Sunrise, "الظهر": timings.Dhuhr,
-                    "العصر": timings.Asr, "المغرب": timings.Maghrib, "العشاء": timings.Isha
-                };
-            } catch (e) { console.warn("UI Update Error", e); }
+            const timings = data.timings; const hijri = data.hijri;
+            document.getElementById('hijriYear').textContent = hijri.year; document.getElementById('hijriMonth').textContent = hijri.month.ar; document.getElementById('hijriDay').textContent = hijri.day;
+            document.getElementById('fajr').textContent = formatTime12h(timings.Fajr); document.getElementById('sunrise').textContent = formatTime12h(timings.Sunrise); document.getElementById('dhuhr').textContent = formatTime12h(timings.Dhuhr); document.getElementById('asr').textContent = formatTime12h(timings.Asr); document.getElementById('maghrib').textContent = formatTime12h(timings.Maghrib); document.getElementById('isha').textContent = formatTime12h(timings.Isha);
+            globalPrayerTimes = { "الفجر": timings.Fajr, "الشروق": timings.Sunrise, "الظهر": timings.Dhuhr, "العصر": timings.Asr, "المغرب": timings.Maghrib, "العشاء": timings.Isha };
         }
-
         async function fetchData() {
             const url = 'https://api.aladhan.com/v1/timingsByCity?city=Cairo&country=Egypt&method=5&language=ar';
-            try {
-                const response = await fetch(url + '&_=' + Date.now()); // منع الكاش
-                if (!response.ok) throw new Error("Network response was not ok");
-                const data = await response.json();
-                const payload = { timings: data.data.timings, hijri: data.data.date.hijri };
-                
-                // محاولة الحفظ في الذاكرة المحلية (مع الحماية)
-                try {
-                    localStorage.setItem('prayerData', JSON.stringify(payload));
-                    localStorage.setItem('lastFetchDate', new Date().toDateString());
-                } catch (e) { console.warn("Storage blocked by browser"); }
-                
-                updateUI(payload);
-            } catch (error) {
-                console.warn("Fetch failed, trying cache...", error);
-                try {
-                    const cached = localStorage.getItem('prayerData');
-                    if (cached) updateUI(JSON.parse(cached));
-                } catch (e) { console.warn("Cache blocked or empty"); }
-            }
+            try { const response = await fetch(url + '&_=' + Date.now()); const data = await response.json(); const payload = { timings: data.data.timings, hijri: data.data.date.hijri }; localStorage.setItem('prayerData_Cairo', JSON.stringify(payload)); localStorage.setItem('lastFetch_Cairo', new Date().toDateString()); updateUI(payload); } catch (error) { try { const saved = localStorage.getItem('prayerData_Cairo'); if (saved) updateUI(JSON.parse(saved)); } catch(e) {} }
         }
-
         function updateCountdown() {
-            if (Object.keys(globalPrayerTimes).length === 0) return; 
-            const now = new Date();
-            let nextPrayer = null;
-            let nextTime = null;
-
-            try {
-                const timesList = Object.keys(globalPrayerTimes).map(name => {
-                    let t = globalPrayerTimes[name].split(' ')[0];
-                    let dt = new Date(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${t}:00`);
-                    return { name, time: dt };
-                }).sort((a, b) => a.time - b.time);
-
-                for (let p of timesList) {
-                    if (p.time > now) { nextPrayer = p.name; nextTime = p.time; break; }
-                }
-
-                if (!nextPrayer) {
-                    nextPrayer = timesList[0].name;
-                    nextTime = new Date(timesList[0].time.getTime() + 24 * 60 * 60 * 1000);
-                }
-
-                const diff = nextTime - now;
-                const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-
-                document.getElementById('nextPrayerName').textContent = nextPrayer;
-                document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
-            } catch(e) { console.warn("Countdown Error", e); }
+            if (Object.keys(globalPrayerTimes).length === 0) return;
+            const now = new Date(); let nextPrayer = null; let nextTime = null;
+            const timesList = Object.keys(globalPrayerTimes).map(name => { let t = globalPrayerTimes[name].split(' ')[0]; let dt = new Date(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${t}:00`); return { name, time: dt }; }).sort((a, b) => a.time - b.time);
+            for (let p of timesList) { if (p.time > now) { nextPrayer = p.name; nextTime = p.time; break; } }
+            if (!nextPrayer) { nextPrayer = timesList[0].name; nextTime = new Date(timesList[0].time.getTime() + 24 * 60 * 60 * 1000); }
+            const diff = nextTime - now; const h = Math.floor(diff / 3600000).toString().padStart(2, '0'); const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0'); const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('nextPrayerName').textContent = nextPrayer; document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
         }
-
-        function refreshAll() {
-            updateGregorianDate();
-            let needFetch = true;
-            
-            try {
-                const savedData = localStorage.getItem('prayerData');
-                const lastFetch = localStorage.getItem('lastFetchDate');
-                
-                if (savedData) {
-                    updateUI(JSON.parse(savedData));
-                    if (lastFetch === new Date().toDateString()) needFetch = false; // البيانات حديثة
+        function updateRamadanCountdown() {
+            const now = new Date(); const box = document.getElementById('ramadanBox');
+            let hy, hm, hd;
+            try { const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', { year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(now); hy = parseInt(parts.find(p => p.type === 'year').value); hm = parseInt(parts.find(p => p.type === 'month').value); hd = parseInt(parts.find(p => p.type === 'day').value); } catch (e) { hy = 1448; hm = 9; hd = 1; }
+            if (hm === 9) { let remaining = 30 - hd; if (remaining <= 0) { box.innerHTML = "عيد فطر مبارك 🌙"; } else { box.innerHTML = `متبقي: <span class="ramadan-countdown-text">${remaining} أيام</span> على انتهاء رمضان`; } } 
+            else {
+                let targetHy = (hm < 9) ? hy : hy + 1;
+                let jd = Math.floor((11 * targetHy + 3) / 30) + 354 * targetHy + 30 * 9 - Math.floor((9 - 1) / 2) + 1 + 1948440 - 385;
+                let l = jd + 68569; let n = Math.floor((4 * l) / 146097); l = l - Math.floor((146097 * n + 3) / 4); let i = Math.floor((4000 * (l + 1)) / 1461001); l = l - Math.floor((1461 * i) / 4) + 31; let j = Math.floor((80 * l) / 2447); let day = l - Math.floor((2447 * j) / 80); l = Math.floor(j / 11); let month = j + 2 - 12 * l; let year = 100 * (n - 49) + i + l;
+                let ramadanDate = new Date(year, month - 1, day); ramadanDate.setHours(0,0,0,0); let today = new Date(); today.setHours(0,0,0,0);
+                let diffDays = Math.round((ramadanDate - today) / (1000 * 60 * 60 * 24));
+                if (diffDays === 0) { box.innerHTML = `رمضان مبارك! 🌙`; } else {
+                    let months = Math.floor(diffDays / 30); let days = diffDays % 30; let text = ""; if (months > 0) text += `${months} شهر و `; text += `${days} يوم`;
+                    box.innerHTML = `متبقي على رمضان: <span class="ramadan-countdown-text">${text}</span>`;
                 }
-            } catch (e) {
-                console.warn("Local storage is blocked. Will fetch from API.");
             }
-
-            if (needFetch) fetchData(); // جلب من الإنترنت إذا لم توجد بيانات محلية
         }
-
-        setInterval(updateCountdown, 1000);
-        setInterval(updateGregorianDate, 60000);
-        setInterval(() => { if (new Date().getMinutes() === 0) fetchData(); }, 60000);
-        
-        document.addEventListener("visibilitychange", () => { 
-            if (document.visibilityState === "visible") refreshAll(); 
-        });
-        
-        refreshAll();
+        function refreshAll() { updateGregorianDate(); try { const savedData = localStorage.getItem('prayerData_Cairo'); if (savedData) updateUI(JSON.parse(savedData)); } catch (e) {} const lastFetch = localStorage.getItem('lastFetch_Cairo'); if (lastFetch !== new Date().toDateString()) fetchData(); updateRamadanCountdown(); }
+        setInterval(updateCountdown, 1000); setInterval(updateGregorianDate, 60000); setInterval(updateRamadanCountdown, 60000); setInterval(() => { if (new Date().getMinutes() === 0) fetchData(); }, 60000); window.addEventListener('focus', refreshAll); fetchData(); refreshAll();
     </script>
 </body>
 </html>
